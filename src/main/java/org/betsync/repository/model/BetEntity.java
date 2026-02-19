@@ -7,7 +7,10 @@ import lombok.*;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "bet")
+@Table(name = "bet",
+        indexes = {
+                @Index(name = "idx_bet_event_published", columnList = "event_id,published_for_settlement")
+        })
 @Getter
 @Setter
 @ToString
