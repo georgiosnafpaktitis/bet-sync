@@ -15,6 +15,8 @@ import org.betsync.streaming.rocketMq.producer.BetSettlementPublisher;
 
 import lombok.extern.slf4j.Slf4j;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 @Slf4j
 public class BetServiceImpl implements BetService {
@@ -50,11 +52,10 @@ public class BetServiceImpl implements BetService {
         betSettlementPublisher.send(
             BetSettlement.builder().betId(betEntity.getBetId()).status(status).build());
 
-        betEntity.setPublishedForSettlement(true);
         int updated = betRepository.markPublishedForSettlement(betEntity.getBetId());
         log.debug("Updated rows for betId {} = {}", betEntity.getBetId(), updated);
         if (updated == 0) {
-          throw new IllegalArgumentException(
+          throw new EntityNotFoundException(
               "Error while marking bet as 'publishedForSettlement'. Bet with id "
                   + betEntity.getBetId()
                   + " not found");
@@ -72,7 +73,7 @@ public class BetServiceImpl implements BetService {
     int updated = betRepository.updateStatusByBetId(betId, status);
     log.debug("Updated rows for betId {} = {}", betId, updated);
     if (updated == 0) {
-      throw new IllegalArgumentException(
+      throw new EntityNotFoundException(
           "Error while updating bet status. Bet with id " + betId + " not found");
     }
   }
