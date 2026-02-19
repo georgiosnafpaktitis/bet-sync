@@ -38,7 +38,7 @@ public class BetEntity {
   private BigDecimal betAmount;
 
   @Column(nullable = false, columnDefinition = "boolean default false")
-  private boolean publishedForSettlement; // todo renaming?
+  private boolean publishedForSettlement;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 16)
