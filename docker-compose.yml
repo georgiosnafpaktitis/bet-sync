@@ -1,0 +1,149 @@
+services:
+
+  bet-sync:
+    image: bet-sync:latest
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "8787:8787"
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      JAVA_TOOL_OPTIONS:
+        -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=n
+
+  ##################################################
+  ##################### KAFKA ######################
+  ##################################################
+
+  #
+  # See the following document for the interoperability list:
+  # https://docs.confluent.io/platform/current/installation/versions-interoperability.html
+  #
+
+
+  #
+  # Zookeeper
+  #
+  zookeeper-bet-sync:
+    image: confluentinc/cp-zookeeper:6.2.2
+    container_name: zookeeper-bet-sync
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=*"
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc -w 2 zookeeper 2181"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  #
+  # Zoonavigator
+  #
+  zoonavigator-bet-sync:
+    image: elkozmon/zoonavigator
+    container_name: zoonavigator-bet-sync
+    depends_on:
+      - zookeeper-bet-sync
+    ports:
+      - "9085:8000"
+    environment:
+      HTTP_PORT: 8000
+      AUTO_CONNECT_CONNECTION_STRING: zookeeper-bet-sync:2181
+
+  #
+  # Kafka broker
+  #
+  kafka-broker-bet-sync:
+    image: confluentinc/cp-kafka:6.2.2
+    container_name: kafka-broker-bet-sync
+    depends_on:
+      - zookeeper-bet-sync
+    environment:
+      KAFKA_LOG4J_LOGGERS: kafka.controller=ERROR
+      KAFKA_LOG4J_ROOT_LOGLEVEL: ERROR
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-bet-sync:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:9095
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-broker-bet-sync:9092,OUTSIDE://localhost:9095
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
+
+      # optional but nice for local dev:
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+    ports:
+      - 9092:9092
+      - 9095:9095
+    restart: unless-stopped
+
+
+  #
+  # Kafka UI Management Tool
+  #
+  kafka-akhq-bet-sync:
+    container_name: kafka-akhq-bet-sync
+    image: tchiotludo/akhq:0.19.0
+    depends_on:
+      - kafka-broker-bet-sync
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka-broker-bet-sync:9092"
+    ports:
+      - 9083:8080
+    restart: unless-stopped
+
+  ##################################################
+  #################### ROCKETMQ ####################
+  ##################################################
+
+  #
+  # RocketMQ NameServer
+  #
+  rocketmq-namesrv-bet-sync:
+    image: apache/rocketmq:5.3.2
+    container_name: rocketmq-namesrv-bet-sync
+    command: sh mqnamesrv
+    ports:
+      - 9876:9876
+    restart: unless-stopped
+
+  #
+  # RocketMQ Broker
+  #
+  rocketmq-broker-bet-sync:
+    image: apache/rocketmq:5.3.2
+    container_name: rocketmq-broker-bet-sync
+    command: sh mqbroker
+    environment:
+      - NAMESRV_ADDR=rocketmq-namesrv-bet-sync:9876
+    depends_on:
+      - rocketmq-namesrv-bet-sync
+    ports:
+      - 10909:10909
+      - 10911:10911
+      - 10912:10912
+    restart: unless-stopped
+
+  rocketmq-console-bet-sync:
+    image: styletang/rocketmq-console-ng:latest
+    container_name: rocketmq-console-bet-sync
+    depends_on:
+      - rocketmq-namesrv-bet-sync
+    environment:
+      - JAVA_OPTS=-Drocketmq.namesrv.addr=rocketmq-namesrv-bet-sync:9876 -Dserver.port=8080
+    ports:
+      - "2222:8080"
+    restart: unless-stopped
+
+  ##################################################
+  ##################################################
+  ##################################################

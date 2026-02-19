@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: betSync
+  datasource:
+    url: jdbc:h2:mem:betsyncdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: always
+  kafka:
+    bootstrap-servers: kafka-broker-bet-sync:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+server:
+  servlet:
+    context-path: /api
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+kafka:
+  brokers: ${KAFKA_BROKERS:kafka-broker-bet-sync:9092}
+  consumers:
+    event-outcomes-consumer:
+      group: ${KAFKA_CONSUMERS_BET_SYNC_GROUP:bet-sync}
+  topics:
+    event-outcomes-event-topic:
+      name: ${KAFKA_EVENT_OUTCOMES_GROUP:event-outcomes}
+
+rocketmq:
+  name-server: ${ROCKETMQ_NAME_SERVER:rocketmq-namesrv-bet-sync:9876}
+  producer:
+    group: ${ROCKETMQ_PRODUCER_GROUP:bet-sync-producer}
+  consumers:
+    bet-settlements-consumer:
+      group: ${ROCKETMQ_CONSUMERS_BET_SYNC_GROUP:bet-sync}
+  topics:
+    bet-settlements-event-topic:
+      name: ${ROCKETMQ_BET_SETTLEMENTS_TOPIC:bet-settlements}

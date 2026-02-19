@@ -1,0 +1,118 @@
+plugins {
+    id "com.google.cloud.tools.jib" version "3.4.0"
+    id 'java'
+    id 'jacoco'
+    id 'org.springframework.boot' version '3.5.4'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '6.23.3'
+}
+
+group = 'org.betsync'
+version = '0.0.1-SNAPSHOT'
+
+jib {
+    container.ports = ['8080', '8081']
+    container.args = ['server']
+    from.image = 'gcr.io/distroless/java21-debian12:nonroot'
+    container.user = 1001
+    to.image = "$rootProject.name:latest"
+}
+
+compileJava {
+    options.compilerArgs = ['-parameters']
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    //spring-boot dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.apache.rocketmq:rocketmq-spring-boot-starter:2.3.5'
+
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
+
+    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0"
+
+    runtimeOnly 'com.h2database:h2'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+// configure the spotless to use the Google Java Format
+spotless {
+    java {
+        googleJavaFormat('1.19.2')
+        removeUnusedImports()
+        importOrder 'java', 'javax', 'org', 'io', 'com', 'org.betsync', 'lombok', '\\#'
+        formatAnnotations()
+    }
+    enforceCheck = true
+}
+
+// jacoco latest version
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+}
+
+// output XML reports for SonarCloud
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/*Entity.class",
+                    "**/model/*",
+                    "**/mapper/*",
+            ])
+        }))
+    }
+}
+
+// global coverage rule for the test coverage
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.8
+            }
+        }
+    }
+}
+

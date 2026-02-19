@@ -1,0 +1,8 @@
+# env vars
+KAFKA_BROKERS: kafka-broker-bet-sync:9092
+KAFKA_CONSUMERS_BET_SYNC_GROUP: bet-sync
+KAFKA_EVENT_OUTCOMES_GROUP: event-outcomes
+ROCKETMQ_NAME_SERVER: rocketmq-namesrv-bet-sync:9876
+ROCKETMQ_CONSUMERS_BET_SYNC_GROUP: bet-sync
+ROCKETMQ_PRODUCER_GROUP: bet-sync-producer
+ROCKETMQ_BET_SETTLEMENTS_TOPIC: bet-settlements
