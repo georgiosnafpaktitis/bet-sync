@@ -1,6 +1,10 @@
+volumes:
+  rocketmq-client-logs:
+
 services:
 
   bet-sync:
+    user: "0:0"
     image: bet-sync:latest
     ports:
       - "8080:8080"
@@ -11,6 +15,8 @@ services:
       SPRING_PROFILES_ACTIVE: local
       JAVA_TOOL_OPTIONS:
         -Xdebug -agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=n
+    volumes:
+      - rocketmq-client-logs:/logs/rocketmqlogs
 
   ##################################################
   ##################### KAFKA ######################
