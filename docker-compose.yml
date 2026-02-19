@@ -17,12 +17,6 @@ services:
   ##################################################
 
   #
-  # See the following document for the interoperability list:
-  # https://docs.confluent.io/platform/current/installation/versions-interoperability.html
-  #
-
-
-  #
   # Zookeeper
   #
   zookeeper-bet-sync:
