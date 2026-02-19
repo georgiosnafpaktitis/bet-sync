@@ -40,18 +40,19 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    //other libraries
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'org.apache.rocketmq:rocketmq-spring-boot-starter:2.3.5'
-
-    implementation 'org.mapstruct:mapstruct:1.6.3'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
-    testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0"
 
     annotationProcessor 'org.projectlombok:lombok'
     compileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0"
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
 
     runtimeOnly 'com.h2database:h2'
 }
