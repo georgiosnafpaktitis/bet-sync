@@ -46,6 +46,8 @@ class BetServiceImplTest {
         .thenReturn(new PageImpl<>(List.of(betWin, betLose)))
         .thenReturn(new PageImpl<>(List.of()));
 
+    when(betRepository.markPublishedForSettlement(any())).thenReturn(1);
+
     service.publishEligibleToSettleBets("event-1", "winner-1");
 
     ArgumentCaptor<BetSettlement> settlementCaptor = ArgumentCaptor.forClass(BetSettlement.class);
@@ -55,16 +57,14 @@ class BetServiceImplTest {
     assertEquals(Status.WON, settlements.get(0).getStatus());
     assertEquals(Status.LOST, settlements.get(1).getStatus());
 
-    ArgumentCaptor<List<BetEntity>> batchCaptor = ArgumentCaptor.forClass(List.class);
-    verify(betRepository).saveAll(batchCaptor.capture());
-    List<BetEntity> saved = batchCaptor.getValue();
-    assertEquals(true, saved.get(0).isPublishedForSettlement());
-    assertEquals(true, saved.get(1).isPublishedForSettlement());
+    verify(betRepository, times(2)).markPublishedForSettlement(any());
   }
 
   @Test
   void settleBetUpdatesRepository() {
     BetServiceImpl service = new BetServiceImpl(betRepository, betSettlementPublisher);
+
+    when(betRepository.updateStatusByBetId(any(), any())).thenReturn(1);
 
     service.settleBet("bet-1", Status.WON);
 

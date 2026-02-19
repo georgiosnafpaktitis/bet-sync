@@ -51,8 +51,15 @@ public class BetServiceImpl implements BetService {
             BetSettlement.builder().betId(betEntity.getBetId()).status(status).build());
 
         betEntity.setPublishedForSettlement(true);
+        int updated = betRepository.markPublishedForSettlement(betEntity.getBetId());
+        log.debug("Updated rows for betId {} = {}", betEntity.getBetId(), updated);
+        if (updated == 0) {
+          throw new IllegalArgumentException(
+              "Error while marking bet as 'publishedForSettlement'. Bet with id "
+                  + betEntity.getBetId()
+                  + " not found");
+        }
       }
-      betRepository.saveAll(batch);
     }
   }
 
@@ -62,6 +69,11 @@ public class BetServiceImpl implements BetService {
 
   @Override
   public void settleBet(String betId, Status status) {
-    betRepository.updateStatusByBetId(betId, status);
+    int updated = betRepository.updateStatusByBetId(betId, status);
+    log.debug("Updated rows for betId {} = {}", betId, updated);
+    if (updated == 0) {
+      throw new IllegalArgumentException(
+          "Error while updating bet status. Bet with id " + betId + " not found");
+    }
   }
 }

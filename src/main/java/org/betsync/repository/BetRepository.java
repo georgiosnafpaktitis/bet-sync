@@ -18,8 +18,13 @@ public interface BetRepository extends JpaRepository<BetEntity, Long> {
   Page<BetEntity> findByEventIdAndPublishedForSettlement(
       String eventId, boolean publishedForSettlement, Pageable pageable);
 
-  @Modifying
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Transactional
   @Query("UPDATE BetEntity b SET b.status = :status WHERE b.betId = :betId")
-  void updateStatusByBetId(@Param("betId") String betId, @Param("status") Status status);
+  int updateStatusByBetId(@Param("betId") String betId, @Param("status") Status status);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Transactional
+  @Query("UPDATE BetEntity b SET b.publishedForSettlement = true WHERE b.betId = :betId")
+  int markPublishedForSettlement(@Param("betId") String betId);
 }
