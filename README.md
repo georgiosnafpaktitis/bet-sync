@@ -1,4 +1,4 @@
-# betSync
+# bet-sync
 
 A Spring Boot service that:
 - exposes an HTTP API to publish **Event Outcome** messages,
