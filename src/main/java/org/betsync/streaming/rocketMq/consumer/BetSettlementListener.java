@@ -35,8 +35,7 @@ public class BetSettlementListener implements RocketMQListener<BetSettlementMess
   @Override
   public void onMessage(BetSettlementMessage betSettlementMessage) {
     if (betSettlementMessage == null) {
-      log.error("Bet settlement message must not be null");
-      return;
+      throw new IllegalArgumentException("Bet settlement message cannot be null");
     }
     validateMessage(betSettlementMessage);
 

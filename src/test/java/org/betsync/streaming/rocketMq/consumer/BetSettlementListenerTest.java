@@ -2,6 +2,7 @@ package org.betsync.streaming.rocketMq.consumer;
 
 import java.util.Collections;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -24,10 +25,10 @@ class BetSettlementListenerTest {
   @Mock private Validator validator;
 
   @Test
-  void onMessageIgnoresNullMessage() {
+  void onMessageThrowsExceptionWhenNullMessage() {
     BetSettlementListener listener = new BetSettlementListener(betService, validator);
 
-    listener.onMessage(null);
+    Assertions.assertThrows(IllegalArgumentException.class, () -> listener.onMessage(null));
 
     verifyNoInteractions(betService, validator);
   }
